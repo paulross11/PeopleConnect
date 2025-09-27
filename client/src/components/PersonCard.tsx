@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Mail, Phone, MapPin, Edit, Trash2, Briefcase } from "lucide-react";
+import { Link } from "wouter";
 
 interface Job {
   id: string;
@@ -62,7 +63,9 @@ export default function PersonCard({
           </Avatar>
           <div>
             <CardTitle className="text-lg" data-testid={`text-person-name-${id}`}>
-              {name}
+              <Link href={`/people/${id}`} className="hover:underline cursor-pointer" data-testid={`link-person-name-${id}`}>
+                {name}
+              </Link>
             </CardTitle>
             {jobs.length > 0 && (
               <p className="text-sm text-muted-foreground">
