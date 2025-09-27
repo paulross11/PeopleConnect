@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertPersonSchema, insertClientSchema, type Person, type Client } from "@shared/schema";
+import { insertPersonSchema, insertClientSchema, insertJobSchema, type Person, type Client, type Job } from "@shared/schema";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -188,6 +188,99 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error deleting client:", error);
       res.status(500).json({ error: "Failed to delete client" });
+    }
+  });
+
+  // Job API routes
+  
+  // GET /api/jobs - Get all jobs
+  app.get("/api/jobs", async (req, res) => {
+    try {
+      const jobs = await storage.getAllJobs();
+      res.json(jobs);
+    } catch (error) {
+      console.error("Error fetching jobs:", error);
+      res.status(500).json({ error: "Failed to fetch jobs" });
+    }
+  });
+
+  // GET /api/jobs/:id - Get job by ID
+  app.get("/api/jobs/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const job = await storage.getJob(id);
+      
+      if (!job) {
+        return res.status(404).json({ error: "Job not found" });
+      }
+      
+      res.json(job);
+    } catch (error) {
+      console.error("Error fetching job:", error);
+      res.status(500).json({ error: "Failed to fetch job" });
+    }
+  });
+
+  // POST /api/jobs - Create new job
+  app.post("/api/jobs", async (req, res) => {
+    try {
+      const validatedData = insertJobSchema.parse(req.body);
+      const job = await storage.createJob(validatedData);
+      res.status(201).json(job);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          error: "Validation failed", 
+          details: error.errors 
+        });
+      }
+      console.error("Error creating job:", error);
+      res.status(500).json({ error: "Failed to create job" });
+    }
+  });
+
+  // PUT /api/jobs/:id - Update job
+  app.put("/api/jobs/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      
+      // Validate the update data (partial schema)
+      const partialSchema = insertJobSchema.partial();
+      const validatedData = partialSchema.parse(req.body);
+      
+      const job = await storage.updateJob(id, validatedData);
+      
+      if (!job) {
+        return res.status(404).json({ error: "Job not found" });
+      }
+      
+      res.json(job);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          error: "Validation failed", 
+          details: error.errors 
+        });
+      }
+      console.error("Error updating job:", error);
+      res.status(500).json({ error: "Failed to update job" });
+    }
+  });
+
+  // DELETE /api/jobs/:id - Delete job
+  app.delete("/api/jobs/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const deleted = await storage.deleteJob(id);
+      
+      if (!deleted) {
+        return res.status(404).json({ error: "Job not found" });
+      }
+      
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error deleting job:", error);
+      res.status(500).json({ error: "Failed to delete job" });
     }
   });
 
