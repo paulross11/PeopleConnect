@@ -183,7 +183,8 @@ export default function PersonDetail() {
   }));
 
   return (
-    <div className="container mx-auto px-4 py-6">
+    <>
+      <div className="container mx-auto px-4 py-6">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-4">
@@ -213,10 +214,9 @@ export default function PersonDetail() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="space-y-6">
         {/* Person Info Card */}
-        <div className="lg:col-span-1">
-          <Card data-testid="card-person-info">
+        <Card data-testid="card-person-info">
             <CardHeader>
               <div className="flex items-center gap-4">
                 <Avatar className="w-16 h-16">
@@ -274,11 +274,9 @@ export default function PersonDetail() {
               )}
             </CardContent>
           </Card>
-        </div>
 
         {/* Jobs Section */}
-        <div className="lg:col-span-2">
-          <Card data-testid="card-person-jobs">
+        <Card data-testid="card-person-jobs">
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
                 Assigned Jobs ({personJobs.length})
@@ -354,7 +352,6 @@ export default function PersonDetail() {
               )}
             </CardContent>
           </Card>
-        </div>
       </div>
 
       <JobSelectDialog
@@ -364,6 +361,7 @@ export default function PersonDetail() {
         excludeJobIds={personJobs.map(job => job.id)}
         isLoading={addPersonToJobMutation.isPending}
       />
-    </div>
+      </div>
+    </>
   );
 }
