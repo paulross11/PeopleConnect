@@ -424,24 +424,24 @@ export default function JobDetail() {
         </CardHeader>
         <CardContent>
           {assignedPeopleDetails.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="space-y-3">
               {assignedPeopleDetails.map((person) => (
-                <Card key={person.id} className="border-muted">
-                  <CardContent className="p-4">
-                    <div className="space-y-2">
-                      <Link 
-                        href={`/people/${person.id}`} 
-                        className="font-medium text-primary hover:underline" 
-                        data-testid={`link-person-${person.id}`}
-                      >
-                        {person.name}
-                      </Link>
+                <div key={person.id} className="flex items-center justify-between py-3 border-b border-border last:border-b-0">
+                  <div className="flex-1">
+                    <Link 
+                      href={`/people/${person.id}`} 
+                      className="font-medium text-primary hover:underline" 
+                      data-testid={`link-person-${person.id}`}
+                    >
+                      {person.name}
+                    </Link>
+                    <div className="flex items-center gap-4 mt-1">
                       {person.email && (
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1">
                           <Mail className="w-4 h-4 text-muted-foreground" />
                           <a 
                             href={`mailto:${person.email}`} 
-                            className="text-sm text-primary hover:underline"
+                            className="text-sm text-muted-foreground hover:text-primary"
                             data-testid={`link-person-email-${person.id}`}
                           >
                             {person.email}
@@ -449,11 +449,11 @@ export default function JobDetail() {
                         </div>
                       )}
                       {person.telephone && (
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1">
                           <Phone className="w-4 h-4 text-muted-foreground" />
                           <a 
                             href={`tel:${person.telephone}`} 
-                            className="text-sm text-primary hover:underline"
+                            className="text-sm text-muted-foreground hover:text-primary"
                             data-testid={`link-person-phone-${person.id}`}
                           >
                             {person.telephone}
@@ -461,8 +461,8 @@ export default function JobDetail() {
                         </div>
                       )}
                     </div>
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
               ))}
             </div>
           ) : (
