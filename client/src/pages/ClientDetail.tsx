@@ -284,7 +284,7 @@ export default function ClientDetail() {
               ) : clientJobs.length > 0 ? (
                 <div className="space-y-4">
                   {clientJobs.map((job) => (
-                    <Card key={job.id} className="border-l-4 border-l-primary" data-testid={`card-job-${job.id}`}>
+                    <Card key={job.id} className="bg-primary/5" data-testid={`card-job-${job.id}`}>
                       <CardContent className="p-4">
                         <div className="flex items-start justify-between">
                           <div className="space-y-2 flex-1">
