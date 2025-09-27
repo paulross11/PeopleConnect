@@ -122,40 +122,40 @@ export default function ClientDetail() {
   const extraContacts = (client.extraContacts as ExtraContact[] | null) || [];
 
   return (
-    <div className="container mx-auto px-4 py-6">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="sm" asChild>
-            <Link href="/clients" data-testid="button-back-to-clients">
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Clients
-            </Link>
-          </Button>
-          <div className="h-6 w-px bg-border" />
-          <h1 className="text-3xl font-bold">Client Details</h1>
+    <>
+      <div className="container mx-auto px-4 py-6">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-4">
+            <Button variant="ghost" size="sm" asChild>
+              <Link href="/clients" data-testid="button-back-to-clients">
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Back to Clients
+              </Link>
+            </Button>
+            <div className="h-6 w-px bg-border" />
+            <h1 className="text-3xl font-bold">Client Details</h1>
+          </div>
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" data-testid="button-edit-client">
+              <Edit2 className="w-4 h-4 mr-2" />
+              Edit
+            </Button>
+            <Button 
+              variant="destructive" 
+              size="sm" 
+              onClick={handleDeleteClient}
+              data-testid="button-delete-client"
+            >
+              <Trash2 className="w-4 h-4 mr-2" />
+              Delete
+            </Button>
+          </div>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm" data-testid="button-edit-client">
-            <Edit2 className="w-4 h-4 mr-2" />
-            Edit
-          </Button>
-          <Button 
-            variant="destructive" 
-            size="sm" 
-            onClick={handleDeleteClient}
-            data-testid="button-delete-client"
-          >
-            <Trash2 className="w-4 h-4 mr-2" />
-            Delete
-          </Button>
-        </div>
-      </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="space-y-6">
         {/* Client Info Card */}
-        <div className="lg:col-span-1">
-          <Card data-testid="card-client-info">
+        <Card data-testid="card-client-info">
             <CardHeader>
               <div className="flex items-center gap-4">
                 <div className="w-16 h-16 bg-primary/10 rounded-lg flex items-center justify-center">
@@ -261,11 +261,9 @@ export default function ClientDetail() {
               )}
             </CardContent>
           </Card>
-        </div>
 
         {/* Jobs Section */}
-        <div className="lg:col-span-2">
-          <Card data-testid="card-client-jobs">
+        <Card data-testid="card-client-jobs">
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
                 Client Jobs ({clientJobs.length})
@@ -351,6 +349,6 @@ export default function ClientDetail() {
           </Card>
         </div>
       </div>
-    </div>
+    </>
   );
 }
