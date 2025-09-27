@@ -1,8 +1,11 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, Search, Filter, LayoutGrid, List } from "lucide-react";
+import { Plus, Search, Filter, LayoutGrid, List, Calendar, DollarSign, Users, Building2, MapPin, Edit3, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import { Link } from "wouter";
 import { 
   Select,
   SelectContent,
@@ -20,6 +23,41 @@ interface JobWithDetails extends Job {
   client?: Client;
   assignedPeople?: string[]; // From the backend helper methods
   assignedPeopleDetails?: Person[];
+}
+
+// Utility functions
+function getStatusColor(status: string) {
+  switch (status.toLowerCase()) {
+    case "completed":
+      return "bg-chart-1/20 text-chart-1 border-chart-1/30";
+    case "in-progress":
+      return "bg-chart-2/20 text-chart-2 border-chart-2/30";
+    case "pending":
+      return "bg-chart-3/20 text-chart-3 border-chart-3/30";
+    case "cancelled":
+      return "bg-destructive/20 text-destructive border-destructive/30";
+    default:
+      return "bg-muted text-muted-foreground";
+  }
+}
+
+function formatCurrency(amount: number | null | undefined): string {
+  if (!amount && amount !== 0) return "Not specified";
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD'
+  }).format(amount / 100);
+}
+
+function formatDate(date: Date | string | null | undefined): string {
+  if (!date) return "Not specified";
+  const dateObj = typeof date === 'string' ? new Date(date) : date;
+  if (isNaN(dateObj.getTime())) return "Invalid date";
+  return new Intl.DateTimeFormat('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric'
+  }).format(dateObj);
 }
 
 // Form data type for compatibility with frontend form (jobDate as string)
@@ -355,16 +393,107 @@ export default function JobList({ editingJob, onCancelEdit, onEditJob }: JobList
 
       {/* Results Section */}
       {filteredJobs.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" data-testid="jobs-grid">
-          {filteredJobs.map((job) => (
-            <JobCard
-              key={job.id}
-              job={job}
-              onEdit={handleEditJob}
-              onDelete={handleDeleteJob}
-            />
-          ))}
-        </div>
+        viewMode === "card" ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" data-testid="jobs-grid">
+            {filteredJobs.map((job) => (
+              <JobCard
+                key={job.id}
+                job={job}
+                onEdit={handleEditJob}
+                onDelete={handleDeleteJob}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="space-y-4" data-testid="jobs-list">
+            {filteredJobs.map((job) => (
+              <Card key={job.id} className="hover-elevate" data-testid={`list-job-${job.id}`}>
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1 min-w-0 space-y-2">
+                      {/* Title and Status Row */}
+                      <div className="flex items-center gap-3">
+                        <h3 className="font-semibold text-lg truncate">
+                          <Link 
+                            href={`/jobs/${job.id}`} 
+                            className="text-foreground hover:text-primary hover:underline transition-colors"
+                            data-testid={`link-job-title-${job.id}`}
+                          >
+                            {job.title}
+                          </Link>
+                        </h3>
+                        <Badge 
+                          className={`text-xs ${getStatusColor(job.status)}`}
+                          data-testid={`badge-job-status-${job.id}`}
+                        >
+                          {job.status}
+                        </Badge>
+                      </div>
+
+                      {/* Job Details Row */}
+                      <div className="flex items-center gap-6 text-sm text-muted-foreground">
+                        {job.client && (
+                          <div className="flex items-center gap-1">
+                            <Building2 className="w-4 h-4" />
+                            <span data-testid={`text-job-client-${job.id}`}>{job.client.name}</span>
+                          </div>
+                        )}
+                        
+                        <div className="flex items-center gap-1">
+                          <Calendar className="w-4 h-4" />
+                          <span data-testid={`text-job-date-${job.id}`}>{formatDate(job.jobDate)}</span>
+                        </div>
+                        
+                        <div className="flex items-center gap-1">
+                          <DollarSign className="w-4 h-4" />
+                          <span data-testid={`text-job-fee-${job.id}`}>{formatCurrency(job.fee)}</span>
+                        </div>
+                        
+                        {job.assignedPeopleDetails && job.assignedPeopleDetails.length > 0 && (
+                          <div className="flex items-center gap-1">
+                            <Users className="w-4 h-4" />
+                            <span data-testid={`text-job-people-${job.id}`}>
+                              {job.assignedPeopleDetails.length} assigned
+                            </span>
+                          </div>
+                        )}
+                        
+                        {job.address && (
+                          <div className="flex items-center gap-1">
+                            <MapPin className="w-4 h-4" />
+                            <span className="truncate max-w-32" data-testid={`text-job-address-${job.id}`}>
+                              {job.address}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="flex items-center gap-2 ml-4">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleEditJob(job)}
+                        data-testid={`button-edit-job-${job.id}`}
+                      >
+                        <Edit3 className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        onClick={() => handleDeleteJob(job.id)}
+                        data-testid={`button-delete-job-${job.id}`}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )
       ) : (
         <div className="text-center py-12">
           <p className="text-muted-foreground">
