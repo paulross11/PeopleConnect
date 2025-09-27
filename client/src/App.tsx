@@ -10,6 +10,7 @@ import Dashboard from "@/pages/Dashboard";
 import People from "@/pages/People";
 import PersonDetail from "@/pages/PersonDetail";
 import Clients from "@/pages/Clients";
+import ClientDetail from "@/pages/ClientDetail";
 import Jobs from "@/pages/Jobs";
 import NotFound from "@/pages/not-found";
 import { Button } from "@/components/ui/button";
@@ -40,6 +41,7 @@ function Router() {
       <Route path="/people" component={People} />
       <Route path="/people/:id" component={PersonDetail} />
       <Route path="/clients" component={Clients} />
+      <Route path="/clients/:id" component={ClientDetail} />
       <Route path="/jobs" component={Jobs} />
       <Route component={NotFound} />
     </Switch>
