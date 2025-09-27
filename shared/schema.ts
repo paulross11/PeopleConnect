@@ -1,7 +1,14 @@
 import { sql, relations } from "drizzle-orm";
-import { pgTable, text, varchar, timestamp, integer } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, timestamp, integer, json } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
+
+// Extra contact type for clients
+export interface ExtraContact {
+  name: string;
+  phone?: string;
+  email?: string;
+}
 
 // People table
 export const people = pgTable("people", {
@@ -16,11 +23,12 @@ export const people = pgTable("people", {
 // Clients table
 export const clients = pgTable("clients", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  companyName: text("company_name").notNull(),
-  contactPerson: text("contact_person"),
-  email: text("email"),
-  phone: text("phone"),
+  name: text("name").notNull(),
   address: text("address"),
+  leadContact: text("lead_contact"),
+  leadContactPhone: text("lead_contact_phone"),
+  leadContactEmail: text("lead_contact_email"),
+  extraContacts: json("extra_contacts").$type<ExtraContact[]>().default([]),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -57,6 +65,13 @@ export const jobsRelations = relations(jobs, ({ one }) => ({
   }),
 }));
 
+// Extra contact schema for validation
+export const extraContactSchema = z.object({
+  name: z.string().min(1, "Contact name is required"),
+  phone: z.string().optional(),
+  email: z.string().email("Invalid email format").optional().or(z.literal("")),
+});
+
 // Insert schemas
 export const insertPersonSchema = createInsertSchema(people).omit({
   id: true,
@@ -66,6 +81,8 @@ export const insertPersonSchema = createInsertSchema(people).omit({
 export const insertClientSchema = createInsertSchema(clients).omit({
   id: true,
   createdAt: true,
+}).extend({
+  extraContacts: z.array(extraContactSchema).default([]),
 });
 
 export const insertJobSchema = createInsertSchema(jobs).omit({

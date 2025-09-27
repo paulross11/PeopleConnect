@@ -36,7 +36,7 @@ const navigationItems = [
     title: "Clients",
     url: "/clients",
     icon: Building2,
-    badge: "Soon",
+    badge: "Core",
   },
 ];
 
@@ -122,7 +122,8 @@ export function AppSidebar() {
         <div className="text-xs text-muted-foreground">
           <p className="font-medium mb-1">Current Status</p>
           <p>✅ People Database - Active</p>
-          <p>🔜 Jobs & Clients - Coming Soon</p>
+          <p>✅ Clients Database - Active</p>
+          <p>🔜 Jobs Database - Coming Soon</p>
         </div>
       </SidebarFooter>
     </Sidebar>

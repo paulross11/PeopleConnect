@@ -8,6 +8,7 @@ import { AppSidebar } from "@/components/AppSidebar";
 import { ThemeProvider } from "next-themes";
 import Dashboard from "@/pages/Dashboard";
 import People from "@/pages/People";
+import Clients from "@/pages/Clients";
 import NotFound from "@/pages/not-found";
 import { Button } from "@/components/ui/button";
 import { Moon, Sun } from "lucide-react";
@@ -35,6 +36,7 @@ function Router() {
     <Switch>
       <Route path="/" component={Dashboard} />
       <Route path="/people" component={People} />
+      <Route path="/clients" component={Clients} />
       <Route component={NotFound} />
     </Switch>
   );

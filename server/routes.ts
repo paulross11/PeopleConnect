@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertPersonSchema, type Person } from "@shared/schema";
+import { insertPersonSchema, insertClientSchema, type Person, type Client } from "@shared/schema";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -95,6 +95,99 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error deleting person:", error);
       res.status(500).json({ error: "Failed to delete person" });
+    }
+  });
+
+  // Client API routes
+  
+  // GET /api/clients - Get all clients
+  app.get("/api/clients", async (req, res) => {
+    try {
+      const clients = await storage.getAllClients();
+      res.json(clients);
+    } catch (error) {
+      console.error("Error fetching clients:", error);
+      res.status(500).json({ error: "Failed to fetch clients" });
+    }
+  });
+
+  // GET /api/clients/:id - Get client by ID
+  app.get("/api/clients/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const client = await storage.getClient(id);
+      
+      if (!client) {
+        return res.status(404).json({ error: "Client not found" });
+      }
+      
+      res.json(client);
+    } catch (error) {
+      console.error("Error fetching client:", error);
+      res.status(500).json({ error: "Failed to fetch client" });
+    }
+  });
+
+  // POST /api/clients - Create new client
+  app.post("/api/clients", async (req, res) => {
+    try {
+      const validatedData = insertClientSchema.parse(req.body);
+      const client = await storage.createClient(validatedData);
+      res.status(201).json(client);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          error: "Validation failed", 
+          details: error.errors 
+        });
+      }
+      console.error("Error creating client:", error);
+      res.status(500).json({ error: "Failed to create client" });
+    }
+  });
+
+  // PUT /api/clients/:id - Update client
+  app.put("/api/clients/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      
+      // Validate the update data (partial schema)
+      const partialSchema = insertClientSchema.partial();
+      const validatedData = partialSchema.parse(req.body);
+      
+      const client = await storage.updateClient(id, validatedData);
+      
+      if (!client) {
+        return res.status(404).json({ error: "Client not found" });
+      }
+      
+      res.json(client);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          error: "Validation failed", 
+          details: error.errors 
+        });
+      }
+      console.error("Error updating client:", error);
+      res.status(500).json({ error: "Failed to update client" });
+    }
+  });
+
+  // DELETE /api/clients/:id - Delete client
+  app.delete("/api/clients/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const deleted = await storage.deleteClient(id);
+      
+      if (!deleted) {
+        return res.status(404).json({ error: "Client not found" });
+      }
+      
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error deleting client:", error);
+      res.status(500).json({ error: "Failed to delete client" });
     }
   });
 
