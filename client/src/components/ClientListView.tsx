@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Link } from "wouter";
 import {
   Table,
   TableBody,
@@ -50,7 +51,9 @@ export default function ClientListView({ clients, onEdit, onDelete }: ClientList
                 <TableCell>
                   <div className="space-y-1">
                     <div className="font-medium" data-testid={`text-client-name-${client.id}`}>
-                      {client.name}
+                      <Link href={`/clients/${client.id}`} className="hover:underline cursor-pointer" data-testid={`link-client-name-${client.id}`}>
+                        {client.name}
+                      </Link>
                     </div>
                     {client.address && (
                       <div className="text-sm text-muted-foreground line-clamp-1" data-testid={`text-client-address-${client.id}`}>

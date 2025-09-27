@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Building, MapPin, User, Phone, Mail, Edit, Trash2, Users } from "lucide-react";
+import { Link } from "wouter";
 import type { Client } from "@shared/schema";
 
 interface ClientCardProps {
@@ -20,7 +21,9 @@ export default function ClientCard({ client, onEdit, onDelete }: ClientCardProps
           <CardTitle className="flex items-center gap-2 text-lg">
             <Building className="w-5 h-5" />
             <span data-testid={`text-client-name-${client.id}`} className="line-clamp-1">
-              {client.name}
+              <Link href={`/clients/${client.id}`} className="hover:underline cursor-pointer" data-testid={`link-client-name-${client.id}`}>
+                {client.name}
+              </Link>
             </span>
           </CardTitle>
           <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
