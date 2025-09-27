@@ -262,54 +262,42 @@ export default function PersonDetail() {
                   <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
                 </div>
               ) : personJobs.length > 0 ? (
-                <div className="space-y-4">
+                <div className="space-y-3">
                   {personJobs.map((job) => (
-                    <Card key={job.id} className="border-l-4 border-l-primary" data-testid={`card-job-${job.id}`}>
-                      <CardContent className="p-4">
-                        <div className="flex items-start justify-between">
-                          <div className="space-y-2 flex-1">
-                            <div className="flex items-center gap-2">
-                              <h3 className="font-semibold" data-testid={`text-job-title-${job.id}`}>
-                                <Link 
-                                  href={`/jobs/${job.id}`} 
-                                  className="text-foreground hover:text-primary hover:underline transition-colors"
-                                  data-testid={`link-job-title-${job.id}`}
-                                >
-                                  {job.title}
-                                </Link>
-                              </h3>
-                              <Badge 
-                                variant="secondary" 
-                                className={getStatusColor(job.status)}
-                                data-testid={`badge-job-status-${job.id}`}
-                              >
-                                {job.status}
-                              </Badge>
-                            </div>
-                            {job.client && (
-                              <p className="text-sm text-muted-foreground">
-                                Client: {job.client.name}
-                              </p>
-                            )}
-                            <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                              {job.jobDate && (
-                                <span>
-                                  Date: {new Date(job.jobDate).toLocaleDateString()}
-                                </span>
-                              )}
-                              {job.fee && (
-                                <span>
-                                  Fee: ${job.fee.toLocaleString()}
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                          <Button variant="outline" size="sm" asChild>
-                            <Link href={`/jobs/${job.id}`} data-testid={`button-view-job-${job.id}`}>View Job</Link>
-                          </Button>
+                    <div key={job.id} className="flex items-center justify-between py-4 border-b border-border last:border-b-0" data-testid={`row-job-${job.id}`}>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-2">
+                          <Link 
+                            href={`/jobs/${job.id}`} 
+                            className="font-semibold text-primary hover:underline" 
+                            data-testid={`link-job-title-${job.id}`}
+                          >
+                            {job.title}
+                          </Link>
+                          <Badge 
+                            variant="secondary" 
+                            className={getStatusColor(job.status)}
+                            data-testid={`badge-job-status-${job.id}`}
+                          >
+                            {job.status}
+                          </Badge>
                         </div>
-                      </CardContent>
-                    </Card>
+                        <div className="flex items-center gap-6 text-sm text-muted-foreground">
+                          {job.client && (
+                            <span>Client: {job.client.name}</span>
+                          )}
+                          {job.jobDate && (
+                            <span>Date: {new Date(job.jobDate).toLocaleDateString()}</span>
+                          )}
+                          {job.fee && (
+                            <span>Fee: ${job.fee.toLocaleString()}</span>
+                          )}
+                        </div>
+                      </div>
+                      <Button variant="outline" size="sm" asChild>
+                        <Link href={`/jobs/${job.id}`} data-testid={`button-view-job-${job.id}`}>View Job</Link>
+                      </Button>
+                    </div>
                   ))}
                 </div>
               ) : (
