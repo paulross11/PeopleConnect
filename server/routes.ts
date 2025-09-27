@@ -204,11 +204,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // GET /api/jobs/:id - Get job by ID
+  // GET /api/jobs/:id - Get job by ID with assigned people
   app.get("/api/jobs/:id", async (req, res) => {
     try {
       const { id } = req.params;
-      const job = await storage.getJob(id);
+      const job = await storage.getJobWithPeople(id);
       
       if (!job) {
         return res.status(404).json({ error: "Job not found" });
