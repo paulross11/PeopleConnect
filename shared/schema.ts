@@ -38,16 +38,17 @@ export const jobs = pgTable("jobs", {
   title: text("title").notNull(),
   description: text("description"),
   status: text("status").notNull().default("pending"),
-  startDate: timestamp("start_date"),
-  endDate: timestamp("end_date"),
-  personId: varchar("person_id").references(() => people.id),
-  clientId: varchar("client_id").references(() => clients.id),
+  jobDate: timestamp("job_date"),
+  address: text("address"),
+  fee: integer("fee"), // Fee amount in cents to avoid decimal precision issues
+  assignedPeople: json("assigned_people").$type<string[]>().default([]), // Array of person IDs
+  clientId: varchar("client_id").references(() => clients.id).notNull(),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
 // Relations
 export const peopleRelations = relations(people, ({ many }) => ({
-  jobs: many(jobs),
+  // Note: People are now linked to jobs via assignedPeople JSON array, not direct foreign key
 }));
 
 export const clientsRelations = relations(clients, ({ many }) => ({
@@ -55,10 +56,6 @@ export const clientsRelations = relations(clients, ({ many }) => ({
 }));
 
 export const jobsRelations = relations(jobs, ({ one }) => ({
-  person: one(people, {
-    fields: [jobs.personId],
-    references: [people.id],
-  }),
   client: one(clients, {
     fields: [jobs.clientId],
     references: [clients.id],
@@ -88,6 +85,10 @@ export const insertClientSchema = createInsertSchema(clients).omit({
 export const insertJobSchema = createInsertSchema(jobs).omit({
   id: true,
   createdAt: true,
+}).extend({
+  assignedPeople: z.array(z.string()).default([]),
+  clientId: z.string().min(1, "Client is required"),
+  fee: z.number().min(0, "Fee must be non-negative").optional(),
 });
 
 // Types
