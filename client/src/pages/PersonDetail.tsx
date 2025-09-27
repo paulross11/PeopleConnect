@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, Link, useLocation } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Edit2, Trash2, Mail, Phone, MapPin } from "lucide-react";
+import { ArrowLeft, Edit2, Trash2, Mail, Phone, MapPin, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { type Person as DbPerson, type Job as DbJob } from "@shared/schema";
+import JobSelectDialog from "@/components/JobSelectDialog";
 
 // Convert database person to frontend format
 const dbPersonToFrontend = (dbPerson: DbPerson) => ({
@@ -43,6 +44,7 @@ export default function PersonDetail() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const personId = params.id;
+  const [showJobSelectDialog, setShowJobSelectDialog] = useState(false);
 
   // Fetch person details
   const { data: dbPerson, isLoading: personLoading, error: personError } = useQuery<DbPerson>({
@@ -92,6 +94,31 @@ export default function PersonDetail() {
     },
   });
 
+  // Add person to job mutation
+  const addPersonToJobMutation = useMutation({
+    mutationFn: async ({ jobId, personId }: { jobId: string; personId: string }) => {
+      const response = await apiRequest('POST', `/api/jobs/${jobId}/people`, { personId });
+      if (!response.ok) {
+        throw new Error('Failed to add person to job');
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/jobs'] });
+      toast({
+        title: "Success",
+        description: "Person added to job successfully",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to add person to job. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const getInitials = (name: string) => {
     return name.split(' ').map(n => n[0]).join('').toUpperCase();
   };
@@ -112,6 +139,12 @@ export default function PersonDetail() {
   const handleDeletePerson = () => {
     if (confirm("Are you sure you want to delete this person? This action cannot be undone.")) {
       deletePersonMutation.mutate(personId!);
+    }
+  };
+
+  const handleJobSelect = (job: JobWithDetails) => {
+    if (personId) {
+      addPersonToJobMutation.mutate({ jobId: job.id, personId });
     }
   };
 
@@ -249,11 +282,22 @@ export default function PersonDetail() {
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
                 Assigned Jobs ({personJobs.length})
-                {personJobs.length > 0 && (
-                  <Button variant="outline" size="sm" asChild>
-                    <Link href="/jobs">View All Jobs</Link>
+                <div className="flex gap-2">
+                  <Button 
+                    variant="default" 
+                    size="sm" 
+                    onClick={() => setShowJobSelectDialog(true)}
+                    data-testid="button-add-to-job"
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add to Job
                   </Button>
-                )}
+                  {personJobs.length > 0 && (
+                    <Button variant="outline" size="sm" asChild>
+                      <Link href="/jobs">View All Jobs</Link>
+                    </Button>
+                  )}
+                </div>
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -312,6 +356,14 @@ export default function PersonDetail() {
           </Card>
         </div>
       </div>
+
+      <JobSelectDialog
+        open={showJobSelectDialog}
+        onOpenChange={setShowJobSelectDialog}
+        onJobSelect={handleJobSelect}
+        excludeJobIds={personJobs.map(job => job.id)}
+        isLoading={addPersonToJobMutation.isPending}
+      />
     </div>
   );
 }
