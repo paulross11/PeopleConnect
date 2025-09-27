@@ -1,10 +1,11 @@
 import { useState } from "react";
 import PersonCard from "./PersonCard";
+import PersonListView from "./PersonListView";
 import PersonForm from "./PersonForm";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Search, Users, Filter } from "lucide-react";
+import { Plus, Search, Users, Filter, LayoutGrid, List } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -45,6 +46,7 @@ export default function PersonList({
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [showAddForm, setShowAddForm] = useState(false);
+  const [viewMode, setViewMode] = useState<"card" | "list">("card");
 
   // Filter people based on search query and status
   const filteredPeople = people.filter(person => {
@@ -140,7 +142,7 @@ export default function PersonList({
         </div>
       </div>
 
-      {/* Search and Filter Section */}
+      {/* Search, Filter and View Toggle Section */}
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -162,32 +164,71 @@ export default function PersonList({
             <SelectItem value="no-jobs">No Jobs</SelectItem>
           </SelectContent>
         </Select>
+        
+        {/* View Mode Toggle */}
+        <div className="flex bg-muted p-1 rounded-lg" data-testid="view-toggle">
+          <Button
+            size="sm"
+            variant={viewMode === "card" ? "default" : "ghost"}
+            onClick={() => setViewMode("card")}
+            className="flex items-center gap-2 px-3"
+            data-testid="button-card-view"
+          >
+            <LayoutGrid className="w-4 h-4" />
+            Cards
+          </Button>
+          <Button
+            size="sm"
+            variant={viewMode === "list" ? "default" : "ghost"}
+            onClick={() => setViewMode("list")}
+            className="flex items-center gap-2 px-3"
+            data-testid="button-list-view"
+          >
+            <List className="w-4 h-4" />
+            List
+          </Button>
+        </div>
       </div>
 
       {/* Results Section */}
       {filteredPeople.length > 0 ? (
-        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
-          {filteredPeople.map((person) => (
-            <PersonCard
-              key={person.id}
-              id={person.id}
-              name={person.name}
-              email={person.email}
-              telephone={person.telephone}
-              address={person.address}
-              jobs={person.jobs}
-              onEdit={() => {
-                console.log('Edit person:', person.id);
-                onEditPerson?.(person);
-              }}
-              onDelete={() => {
-                console.log('Delete person:', person.id);
-                onDeletePerson?.(person.id);
-              }}
-              onViewJobs={() => console.log('View jobs for person:', person.id)}
-            />
-          ))}
-        </div>
+        viewMode === "card" ? (
+          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+            {filteredPeople.map((person) => (
+              <PersonCard
+                key={person.id}
+                id={person.id}
+                name={person.name}
+                email={person.email}
+                telephone={person.telephone}
+                address={person.address}
+                jobs={person.jobs}
+                onEdit={() => {
+                  console.log('Edit person:', person.id);
+                  onEditPerson?.(person);
+                }}
+                onDelete={() => {
+                  console.log('Delete person:', person.id);
+                  onDeletePerson?.(person.id);
+                }}
+                onViewJobs={() => console.log('View jobs for person:', person.id)}
+              />
+            ))}
+          </div>
+        ) : (
+          <PersonListView
+            people={filteredPeople}
+            onEditPerson={(person) => {
+              console.log('Edit person:', person.id);
+              onEditPerson?.(person);
+            }}
+            onDeletePerson={(personId) => {
+              console.log('Delete person:', personId);
+              onDeletePerson?.(personId);
+            }}
+            onViewJobs={(personId) => console.log('View jobs for person:', personId)}
+          />
+        )
       ) : (
         <div className="flex flex-col items-center justify-center py-12 text-center">
           <div className="p-4 bg-muted/20 rounded-full mb-4">
