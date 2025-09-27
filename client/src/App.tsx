@@ -9,6 +9,7 @@ import { ThemeProvider } from "next-themes";
 import Dashboard from "@/pages/Dashboard";
 import People from "@/pages/People";
 import Clients from "@/pages/Clients";
+import Jobs from "@/pages/Jobs";
 import NotFound from "@/pages/not-found";
 import { Button } from "@/components/ui/button";
 import { Moon, Sun } from "lucide-react";
@@ -37,6 +38,7 @@ function Router() {
       <Route path="/" component={Dashboard} />
       <Route path="/people" component={People} />
       <Route path="/clients" component={Clients} />
+      <Route path="/jobs" component={Jobs} />
       <Route component={NotFound} />
     </Switch>
   );
