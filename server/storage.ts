@@ -1,4 +1,4 @@
-import { type User, type InsertUser, type Person, type InsertPerson, type Client, type InsertClient, people, clients } from "@shared/schema";
+import { type User, type InsertUser, type Person, type InsertPerson, type Client, type InsertClient, type Job, type InsertJob, people, clients, jobs } from "@shared/schema";
 import { db } from "./db";
 import { eq } from "drizzle-orm";
 import { randomUUID } from "crypto";
@@ -25,6 +25,13 @@ export interface IStorage {
   createClient(client: InsertClient): Promise<Client>;
   updateClient(id: string, client: Partial<InsertClient>): Promise<Client | undefined>;
   deleteClient(id: string): Promise<boolean>;
+  
+  // Job methods
+  getAllJobs(): Promise<Job[]>;
+  getJob(id: string): Promise<Job | undefined>;
+  createJob(job: InsertJob): Promise<Job>;
+  updateJob(id: string, job: Partial<InsertJob>): Promise<Job | undefined>;
+  deleteJob(id: string): Promise<boolean>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -111,6 +118,41 @@ export class DatabaseStorage implements IStorage {
     const result = await db
       .delete(clients)
       .where(eq(clients.id, id));
+    return (result.rowCount ?? 0) > 0;
+  }
+
+  // Job methods
+  async getAllJobs(): Promise<Job[]> {
+    const result = await db.select().from(jobs).orderBy(jobs.createdAt);
+    return result;
+  }
+
+  async getJob(id: string): Promise<Job | undefined> {
+    const [job] = await db.select().from(jobs).where(eq(jobs.id, id));
+    return job || undefined;
+  }
+
+  async createJob(insertJob: InsertJob): Promise<Job> {
+    const [job] = await db
+      .insert(jobs)
+      .values(insertJob)
+      .returning();
+    return job;
+  }
+
+  async updateJob(id: string, updateData: Partial<InsertJob>): Promise<Job | undefined> {
+    const [job] = await db
+      .update(jobs)
+      .set(updateData)
+      .where(eq(jobs.id, id))
+      .returning();
+    return job || undefined;
+  }
+
+  async deleteJob(id: string): Promise<boolean> {
+    const result = await db
+      .delete(jobs)
+      .where(eq(jobs.id, id));
     return (result.rowCount ?? 0) > 0;
   }
 }
