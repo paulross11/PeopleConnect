@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, Link, useLocation } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Edit2, Trash2, Mail, Phone, MapPin, Building, User, Users } from "lucide-react";
+import { ArrowLeft, Edit2, Trash2, Mail, Phone, MapPin, Building, User, Users, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -269,11 +269,19 @@ export default function ClientDetail() {
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
                 Client Jobs ({clientJobs.length})
-                {clientJobs.length > 0 && (
-                  <Button variant="outline" size="sm" asChild>
-                    <Link href="/jobs">View All Jobs</Link>
+                <div className="flex gap-2">
+                  <Button variant="default" size="sm" asChild data-testid="button-add-job">
+                    <Link href="/jobs">
+                      <Plus className="w-4 h-4 mr-2" />
+                      Add Job
+                    </Link>
                   </Button>
-                )}
+                  {clientJobs.length > 0 && (
+                    <Button variant="outline" size="sm" asChild>
+                      <Link href="/jobs">View All Jobs</Link>
+                    </Button>
+                  )}
+                </div>
               </CardTitle>
             </CardHeader>
             <CardContent>
