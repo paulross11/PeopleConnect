@@ -267,6 +267,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // POST /api/jobs/:id/people - Add person to job
+  app.post("/api/jobs/:id/people", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { personId } = req.body;
+      
+      if (!personId) {
+        return res.status(400).json({ error: "personId is required" });
+      }
+      
+      const success = await storage.addPersonToJob(id, personId);
+      
+      if (!success) {
+        return res.status(404).json({ error: "Job not found or person already assigned" });
+      }
+      
+      res.status(201).json({ message: "Person added to job successfully" });
+    } catch (error) {
+      console.error("Error adding person to job:", error);
+      res.status(500).json({ error: "Failed to add person to job" });
+    }
+  });
+
+  // DELETE /api/jobs/:id/people/:personId - Remove person from job
+  app.delete("/api/jobs/:id/people/:personId", async (req, res) => {
+    try {
+      const { id, personId } = req.params;
+      
+      const success = await storage.removePersonFromJob(id, personId);
+      
+      if (!success) {
+        return res.status(404).json({ error: "Job assignment not found" });
+      }
+      
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error removing person from job:", error);
+      res.status(500).json({ error: "Failed to remove person from job" });
+    }
+  });
+
   // DELETE /api/jobs/:id - Delete job
   app.delete("/api/jobs/:id", async (req, res) => {
     try {

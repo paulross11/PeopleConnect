@@ -1,6 +1,6 @@
 import { type User, type InsertUser, type Person, type InsertPerson, type Client, type InsertClient, type Job, type InsertJob, type JobPeople, type InsertJobPeople, people, clients, jobs, jobPeople } from "@shared/schema";
 import { db } from "./db";
-import { eq, inArray } from "drizzle-orm";
+import { eq, inArray, and } from "drizzle-orm";
 import { randomUUID } from "crypto";
 
 // modify the interface with any CRUD methods
@@ -32,6 +32,8 @@ export interface IStorage {
   createJob(job: InsertJob): Promise<Job>;
   updateJob(id: string, job: Partial<InsertJob>): Promise<Job | undefined>;
   deleteJob(id: string): Promise<boolean>;
+  addPersonToJob(jobId: string, personId: string): Promise<boolean>;
+  removePersonFromJob(jobId: string, personId: string): Promise<boolean>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -193,6 +195,50 @@ export class DatabaseStorage implements IStorage {
       .where(eq(jobs.id, id));
     // Job-people relationships will be automatically deleted due to CASCADE
     return (result.rowCount ?? 0) > 0;
+  }
+
+  async addPersonToJob(jobId: string, personId: string): Promise<boolean> {
+    try {
+      // Check if the job exists
+      const job = await this.getJob(jobId);
+      if (!job) return false;
+      
+      // Check if the person exists
+      const person = await this.getPerson(personId);
+      if (!person) return false;
+      
+      // Check if assignment already exists
+      const existing = await db
+        .select()
+        .from(jobPeople)
+        .where(and(eq(jobPeople.jobId, jobId), eq(jobPeople.personId, personId)));
+      
+      if (existing.length > 0) return false; // Already assigned
+      
+      // Add the assignment
+      await db.insert(jobPeople).values({
+        jobId,
+        personId,
+      });
+      
+      return true;
+    } catch (error) {
+      console.error("Error adding person to job:", error);
+      return false;
+    }
+  }
+
+  async removePersonFromJob(jobId: string, personId: string): Promise<boolean> {
+    try {
+      const result = await db
+        .delete(jobPeople)
+        .where(and(eq(jobPeople.jobId, jobId), eq(jobPeople.personId, personId)));
+      
+      return (result.rowCount ?? 0) > 0;
+    } catch (error) {
+      console.error("Error removing person from job:", error);
+      return false;
+    }
   }
 
   // Helper method to get job with assigned people
