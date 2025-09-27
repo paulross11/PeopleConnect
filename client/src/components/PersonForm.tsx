@@ -55,7 +55,6 @@ export default function PersonForm({ person, onSave, onCancel, isEditing = false
     e.preventDefault();
     if (validateForm()) {
       onSave?.(formData);
-      console.log('Person saved:', formData);
     }
   };
 

@@ -1,57 +1,112 @@
 import PersonList from "@/components/PersonList";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
+import type { Person as DbPerson } from "@shared/schema";
+
+// Frontend Person interface (for components)
+interface Person {
+  id: string;
+  name: string;
+  email?: string;
+  telephone?: string;
+  address?: string;
+  jobs?: Array<{
+    id: string;
+    title: string;
+    status: string;
+    clientName?: string;
+  }>;
+}
+
+// Convert database person to frontend person
+function dbPersonToFrontend(dbPerson: DbPerson): Person {
+  return {
+    id: dbPerson.id,
+    name: dbPerson.name,
+    email: dbPerson.email || undefined,
+    telephone: dbPerson.telephone || undefined,
+    address: dbPerson.address || undefined,
+    jobs: [], // TODO: Add jobs once jobs API is ready
+  };
+}
+import { useToast } from "@/hooks/use-toast";
 
 export default function People() {
-  //todo: remove mock functionality
-  const mockPeople = [
-    {
-      id: '1',
-      name: 'John Smith',
-      email: 'john.smith@example.com',
-      telephone: '+1 (555) 123-4567',
-      address: '123 Main Street, Anytown, NY 12345',
-      jobs: [
-        { id: '1', title: 'Website Development', status: 'completed', clientName: 'Acme Corp' },
-        { id: '2', title: 'Database Migration', status: 'in-progress', clientName: 'Tech Solutions' },
-      ]
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [editingPerson, setEditingPerson] = useState<DbPerson | null>(null);
+
+  // Fetch all people
+  const { data: dbPeople = [], isLoading } = useQuery<DbPerson[]>({
+    queryKey: ['/api/people'],
+  });
+  
+  // Convert database people to frontend format
+  const people = dbPeople.map(dbPersonToFrontend);
+
+  // Delete person mutation
+  const deleteMutation = useMutation({
+    mutationFn: async (personId: string) => {
+      const response = await fetch(`/api/people/${personId}`, {
+        method: 'DELETE',
+      });
+      if (!response.ok) {
+        throw new Error('Failed to delete person');
+      }
     },
-    {
-      id: '2',
-      name: 'Sarah Johnson',
-      email: 'sarah.j@example.com',
-      telephone: '+1 (555) 987-6543',
-      address: '456 Oak Avenue, Springfield, CA 90210',
-      jobs: [
-        { id: '3', title: 'UI Design', status: 'pending', clientName: 'StartupXYZ' },
-      ]
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/people'] });
+      toast({
+        title: "Success",
+        description: "Person deleted successfully",
+      });
     },
-    {
-      id: '3',
-      name: 'Mike Wilson',
-      email: 'mike.wilson@example.com',
-      telephone: '+1 (555) 456-7890',
-      address: '789 Pine Street, Riverside, TX 75001',
-      jobs: []
+    onError: (error) => {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to delete person",
+      });
     },
-    {
-      id: '4',
-      name: 'Emily Davis',
-      email: 'emily.davis@example.com',
-      telephone: '+1 (555) 321-0987',
-      address: '321 Elm Drive, Lakewood, FL 33801',
-      jobs: [
-        { id: '4', title: 'Mobile App Development', status: 'completed', clientName: 'Digital Agency' },
-        { id: '5', title: 'System Integration', status: 'in-progress', clientName: 'Enterprise Solutions' },
-        { id: '6', title: 'API Development', status: 'pending', clientName: 'Cloud Services' },
-      ]
-    }
-  ];
+  });
+
+  const handleAddPerson = () => {
+    setEditingPerson(null);
+  };
+
+  const handleEditPerson = (person: Person) => {
+    // Convert frontend person back to db format for editing
+    const dbPerson: DbPerson = {
+      id: person.id,
+      name: person.name,
+      email: person.email || null,
+      telephone: person.telephone || null,
+      address: person.address || null,
+      createdAt: null, // This will be ignored in edit operations
+    };
+    setEditingPerson(dbPerson);
+  };
+
+  const handleDeletePerson = (personId: string) => {
+    deleteMutation.mutate(personId);
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-muted-foreground">Loading people...</div>
+      </div>
+    );
+  }
 
   return (
     <PersonList
-      people={mockPeople}
-      onAddPerson={() => console.log('Add person triggered from page')}
-      onEditPerson={(person) => console.log('Edit person triggered from page:', person)}
-      onDeletePerson={(id) => console.log('Delete person triggered from page:', id)}
+      people={people}
+      onAddPerson={handleAddPerson}
+      onEditPerson={handleEditPerson}
+      onDeletePerson={handleDeletePerson}
+      editingPerson={editingPerson}
+      onCancelEdit={() => setEditingPerson(null)}
     />
   );
 }

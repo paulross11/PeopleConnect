@@ -1,38 +1,76 @@
-import { type User, type InsertUser } from "@shared/schema";
+import { type User, type InsertUser, type Person, type InsertPerson, people } from "@shared/schema";
+import { db } from "./db";
+import { eq } from "drizzle-orm";
 import { randomUUID } from "crypto";
 
 // modify the interface with any CRUD methods
 // you might need
 
 export interface IStorage {
+  // User methods (legacy)
   getUser(id: string): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
+  
+  // People methods
+  getAllPeople(): Promise<Person[]>;
+  getPerson(id: string): Promise<Person | undefined>;
+  createPerson(person: InsertPerson): Promise<Person>;
+  updatePerson(id: string, person: Partial<InsertPerson>): Promise<Person | undefined>;
+  deletePerson(id: string): Promise<boolean>;
 }
 
-export class MemStorage implements IStorage {
-  private users: Map<string, User>;
-
-  constructor() {
-    this.users = new Map();
-  }
-
+export class DatabaseStorage implements IStorage {
+  // User methods (legacy - keeping for backward compatibility)
   async getUser(id: string): Promise<User | undefined> {
-    return this.users.get(id);
+    // Legacy user implementation would go here if needed
+    return undefined;
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
-      (user) => user.username === username,
-    );
+    // Legacy user implementation would go here if needed
+    return undefined;
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
-    const id = randomUUID();
-    const user: User = { ...insertUser, id };
-    this.users.set(id, user);
-    return user;
+    // Legacy user implementation would go here if needed
+    throw new Error("User creation not implemented");
+  }
+
+  // People methods
+  async getAllPeople(): Promise<Person[]> {
+    const result = await db.select().from(people).orderBy(people.name);
+    return result;
+  }
+
+  async getPerson(id: string): Promise<Person | undefined> {
+    const [person] = await db.select().from(people).where(eq(people.id, id));
+    return person || undefined;
+  }
+
+  async createPerson(insertPerson: InsertPerson): Promise<Person> {
+    const [person] = await db
+      .insert(people)
+      .values(insertPerson)
+      .returning();
+    return person;
+  }
+
+  async updatePerson(id: string, updateData: Partial<InsertPerson>): Promise<Person | undefined> {
+    const [person] = await db
+      .update(people)
+      .set(updateData)
+      .where(eq(people.id, id))
+      .returning();
+    return person || undefined;
+  }
+
+  async deletePerson(id: string): Promise<boolean> {
+    const result = await db
+      .delete(people)
+      .where(eq(people.id, id));
+    return (result.rowCount ?? 0) > 0;
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();

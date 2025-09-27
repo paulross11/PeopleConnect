@@ -1,11 +1,15 @@
 import { useState } from "react";
 import PersonCard from "./PersonCard";
 import PersonListView from "./PersonListView";
-import PersonForm from "./PersonForm";
+import PersonForm, { type PersonFormData } from "./PersonForm";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Search, Users, Filter, LayoutGrid, List } from "lucide-react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
+import type { Person as DbPerson } from "@shared/schema";
 import {
   Select,
   SelectContent,
@@ -35,18 +39,70 @@ interface PersonListProps {
   onAddPerson?: () => void;
   onEditPerson?: (person: Person) => void;
   onDeletePerson?: (personId: string) => void;
+  editingPerson?: DbPerson | null;
+  onCancelEdit?: () => void;
 }
 
 export default function PersonList({ 
   people = [], 
   onAddPerson,
   onEditPerson,
-  onDeletePerson 
+  onDeletePerson,
+  editingPerson,
+  onCancelEdit
 }: PersonListProps) {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [showAddForm, setShowAddForm] = useState(false);
   const [viewMode, setViewMode] = useState<"card" | "list">("card");
+  
+  // Create person mutation
+  const createPersonMutation = useMutation({
+    mutationFn: async (data: PersonFormData) => {
+      const response = await apiRequest('POST', '/api/people', data);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/people'] });
+      setShowAddForm(false);
+      toast({
+        title: "Success",
+        description: "Person created successfully",
+      });
+    },
+    onError: (error) => {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to create person",
+      });
+    },
+  });
+  
+  // Update person mutation
+  const updatePersonMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: PersonFormData }) => {
+      const response = await apiRequest('PUT', `/api/people/${id}`, data);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/people'] });
+      onCancelEdit?.();
+      toast({
+        title: "Success",
+        description: "Person updated successfully",
+      });
+    },
+    onError: (error) => {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to update person",
+      });
+    },
+  });
 
   // Filter people based on search query and status
   const filteredPeople = people.filter(person => {
@@ -65,16 +121,32 @@ export default function PersonList({
     total + (person.jobs?.length || 0), 0
   );
 
-  if (showAddForm) {
+  if (showAddForm || editingPerson) {
+    const isEditing = !!editingPerson;
+    const formPerson = editingPerson ? {
+      id: editingPerson.id,
+      name: editingPerson.name,
+      email: editingPerson.email || undefined,
+      telephone: editingPerson.telephone || undefined,
+      address: editingPerson.address || undefined,
+    } : undefined;
+    
     return (
       <div className="space-y-6">
         <PersonForm
+          person={formPerson}
+          isEditing={isEditing}
           onSave={(data) => {
-            console.log('New person saved:', data);
-            setShowAddForm(false);
-            onAddPerson?.();
+            if (isEditing && editingPerson) {
+              updatePersonMutation.mutate({ id: editingPerson.id, data });
+            } else {
+              createPersonMutation.mutate(data);
+            }
           }}
-          onCancel={() => setShowAddForm(false)}
+          onCancel={() => {
+            setShowAddForm(false);
+            onCancelEdit?.();
+          }}
         />
       </div>
     );
