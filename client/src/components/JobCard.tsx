@@ -5,7 +5,7 @@ import { Link } from "wouter";
 import { 
   MapPin, 
   Calendar, 
-  DollarSign, 
+  PoundSterling, 
   Users, 
   Edit3, 
   Trash2, 
@@ -139,7 +139,7 @@ export default function JobCard({ job, onEdit, onDelete }: JobCardProps) {
 
         {/* Fee */}
         <div className="flex items-center gap-2 text-sm">
-          <DollarSign className="w-4 h-4 text-muted-foreground" />
+          <PoundSterling className="w-4 h-4 text-muted-foreground" />
           <span className="font-medium">Fee:</span>
           <span data-testid={`text-job-fee-${id}`}>{formatCurrency(fee)}</span>
         </div>

@@ -24,7 +24,7 @@ import {
 } from "@/components/ui/form";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { CalendarIcon, DollarSign, MapPin, Users, Briefcase } from "lucide-react";
+import { CalendarIcon, PoundSterling, MapPin, Users, Briefcase } from "lucide-react";
 
 // Extend the insert schema for the form
 const jobFormSchema = insertJobSchema.extend({
@@ -244,7 +244,7 @@ export default function JobForm({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="flex items-center gap-2">
-                      <DollarSign className="w-4 h-4" />
+                      <PoundSterling className="w-4 h-4" />
                       Fee Amount
                     </FormLabel>
                     <FormControl>

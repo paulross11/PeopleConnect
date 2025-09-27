@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, Search, Filter, LayoutGrid, List, Calendar, DollarSign, Users, Building2, MapPin, Edit3, Trash2 } from "lucide-react";
+import { Plus, Search, Filter, LayoutGrid, List, Calendar, PoundSterling, Users, Building2, MapPin, Edit3, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -445,7 +445,7 @@ export default function JobList({ editingJob, onCancelEdit, onEditJob }: JobList
                         </div>
                         
                         <div className="flex items-center gap-1">
-                          <DollarSign className="w-4 h-4" />
+                          <PoundSterling className="w-4 h-4" />
                           <span data-testid={`text-job-fee-${job.id}`}>{formatCurrency(job.fee)}</span>
                         </div>
                         

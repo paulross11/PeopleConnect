@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Check, Briefcase, Calendar, DollarSign } from "lucide-react";
+import { Check, Briefcase, Calendar, PoundSterling } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -172,7 +172,7 @@ export default function JobSelectDialog({
                           )}
                           {job.fee && (
                             <div className="flex items-center gap-1">
-                              <DollarSign className="w-3 h-3" />
+                              <PoundSterling className="w-3 h-3" />
                               <span>${job.fee.toLocaleString()}</span>
                             </div>
                           )}
