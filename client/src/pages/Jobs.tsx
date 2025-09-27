@@ -86,6 +86,7 @@ export default function Jobs() {
       <JobList
         editingJob={editingJob}
         onCancelEdit={handleCancelEdit}
+        onEditJob={handleEditJob}
       />
     </div>
   );

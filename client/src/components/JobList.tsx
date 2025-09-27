@@ -30,9 +30,10 @@ type JobFormData = Omit<InsertJob, 'jobDate'> & {
 interface JobListProps {
   editingJob?: JobWithDetails | null;
   onCancelEdit?: () => void;
+  onEditJob?: (job: JobWithDetails) => void;
 }
 
-export default function JobList({ editingJob, onCancelEdit }: JobListProps) {
+export default function JobList({ editingJob, onCancelEdit, onEditJob }: JobListProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
@@ -181,8 +182,7 @@ export default function JobList({ editingJob, onCancelEdit }: JobListProps) {
   };
 
   const handleEditJob = (job: JobWithDetails) => {
-    // This would typically be handled by the parent component
-    console.log("Edit job:", job);
+    onEditJob?.(job);
   };
 
   if (isLoading) {
