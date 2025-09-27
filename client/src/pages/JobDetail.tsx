@@ -45,10 +45,10 @@ function getStatusColor(status: string) {
 
 function formatCurrency(amount: number | null | undefined): string {
   if (!amount && amount !== 0) return "Not specified";
-  return new Intl.NumberFormat('en-US', {
+  return new Intl.NumberFormat('en-GB', {
     style: 'currency',
-    currency: 'USD'
-  }).format(amount / 100); // Convert from cents to dollars
+    currency: 'GBP'
+  }).format(amount / 100); // Convert from pence to pounds
 }
 
 function formatDate(date: Date | string | null | undefined): string {
