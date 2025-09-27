@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { type Client, type Job as DbJob, type ExtraContact } from "@shared/schema";
+import ClientForm, { type ClientFormData } from "@/components/ClientForm";
 
 interface JobWithDetails extends DbJob {
   assignedPeople?: string[];
@@ -19,6 +20,7 @@ export default function ClientDetail() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const clientId = params.id;
+  const [showEditForm, setShowEditForm] = useState(false);
 
   // Fetch client details
   const { data: client, isLoading: clientLoading, error: clientError } = useQuery<Client>({
@@ -68,6 +70,33 @@ export default function ClientDetail() {
     },
   });
 
+  // Update client mutation
+  const updateClientMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: ClientFormData }) => {
+      const response = await apiRequest('PUT', `/api/clients/${id}`, data);
+      if (!response.ok) {
+        throw new Error('Failed to update client');
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/clients'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/clients', clientId] });
+      setShowEditForm(false);
+      toast({
+        title: "Success",
+        description: "Client updated successfully",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to update client. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
       case 'completed':
@@ -85,6 +114,20 @@ export default function ClientDetail() {
     if (confirm("Are you sure you want to delete this client? This action cannot be undone.")) {
       deleteClientMutation.mutate(clientId!);
     }
+  };
+
+  const handleEditClient = () => {
+    setShowEditForm(true);
+  };
+
+  const handleSaveClient = (data: ClientFormData) => {
+    if (clientId) {
+      updateClientMutation.mutate({ id: clientId, data });
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setShowEditForm(false);
   };
 
   if (clientLoading) {
@@ -121,6 +164,40 @@ export default function ClientDetail() {
 
   const extraContacts = (client.extraContacts as ExtraContact[] | null) || [];
 
+  // Show edit form if editing
+  if (showEditForm) {
+    return (
+      <div className="container mx-auto px-4 py-6">
+        <div className="max-w-4xl mx-auto">
+          <div className="flex items-center gap-4 mb-6">
+            <Button variant="ghost" size="sm" asChild>
+              <Link href="/clients">
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Back to Clients
+              </Link>
+            </Button>
+            <div className="h-6 w-px bg-border" />
+            <h1 className="text-3xl font-bold">Edit Client</h1>
+          </div>
+          <ClientForm
+            client={{
+              id: client.id,
+              name: client.name,
+              address: client.address || undefined,
+              leadContact: client.leadContact || undefined,
+              leadContactPhone: client.leadContactPhone || undefined,
+              leadContactEmail: client.leadContactEmail || undefined,
+              extraContacts: client.extraContacts || undefined,
+            }}
+            onSave={handleSaveClient}
+            onCancel={handleCancelEdit}
+            isEditing={true}
+          />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <>
       <div className="container mx-auto px-4 py-6">
@@ -137,7 +214,12 @@ export default function ClientDetail() {
             <h1 className="text-3xl font-bold">Client Details</h1>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" size="sm" data-testid="button-edit-client">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleEditClient}
+              data-testid="button-edit-client"
+            >
               <Edit2 className="w-4 h-4 mr-2" />
               Edit
             </Button>
