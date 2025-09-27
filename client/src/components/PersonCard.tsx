@@ -144,9 +144,13 @@ export default function PersonCard({
                   data-testid={`job-${job.id}`}
                 >
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">
+                    <Link 
+                      href={`/jobs/${job.id}`} 
+                      className="text-sm font-medium truncate text-foreground hover:text-primary hover:underline transition-colors block"
+                      data-testid={`link-job-title-${job.id}`}
+                    >
                       {job.title}
-                    </p>
+                    </Link>
                     {job.clientName && (
                       <p className="text-xs text-muted-foreground truncate">
                         {job.clientName}

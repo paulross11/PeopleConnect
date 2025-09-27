@@ -1,6 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Link } from "wouter";
 import { 
   MapPin, 
   Calendar, 
@@ -83,7 +84,13 @@ export default function JobCard({ job, onEdit, onDelete }: JobCardProps) {
         <div className="flex items-start justify-between">
           <div className="flex-1 min-w-0">
             <CardTitle className="text-lg font-semibold truncate" data-testid={`text-job-title-${id}`}>
-              {title}
+              <Link 
+                href={`/jobs/${id}`} 
+                className="text-foreground hover:text-primary hover:underline transition-colors"
+                data-testid={`link-job-title-${id}`}
+              >
+                {title}
+              </Link>
             </CardTitle>
             {description && (
               <p className="text-sm text-muted-foreground mt-1 line-clamp-2" data-testid={`text-job-description-${id}`}>

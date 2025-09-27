@@ -270,7 +270,13 @@ export default function PersonDetail() {
                           <div className="space-y-2 flex-1">
                             <div className="flex items-center gap-2">
                               <h3 className="font-semibold" data-testid={`text-job-title-${job.id}`}>
-                                {job.title}
+                                <Link 
+                                  href={`/jobs/${job.id}`} 
+                                  className="text-foreground hover:text-primary hover:underline transition-colors"
+                                  data-testid={`link-job-title-${job.id}`}
+                                >
+                                  {job.title}
+                                </Link>
                               </h3>
                               <Badge 
                                 variant="secondary" 
@@ -299,7 +305,7 @@ export default function PersonDetail() {
                             </div>
                           </div>
                           <Button variant="outline" size="sm" asChild>
-                            <Link href={`/jobs`}>View Job</Link>
+                            <Link href={`/jobs/${job.id}`} data-testid={`button-view-job-${job.id}`}>View Job</Link>
                           </Button>
                         </div>
                       </CardContent>
