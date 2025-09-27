@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Mail, Phone, MapPin, Edit, Trash2, Eye, Briefcase } from "lucide-react";
+import { Link } from "wouter";
 import {
   Table,
   TableBody,
@@ -92,7 +93,9 @@ export default function PersonListView({
                   </Avatar>
                   <div className="min-w-0">
                     <p className="font-medium text-sm" data-testid={`text-person-name-${person.id}`}>
-                      {person.name}
+                      <Link href={`/people/${person.id}`} className="hover:underline cursor-pointer" data-testid={`link-person-name-${person.id}`}>
+                        {person.name}
+                      </Link>
                     </p>
                   </div>
                 </div>
