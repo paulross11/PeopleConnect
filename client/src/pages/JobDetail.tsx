@@ -72,8 +72,8 @@ export default function JobDetail() {
   const queryClient = useQueryClient();
   const jobId = params.id;
 
-  // Fetch job details
-  const { data: dbJob, isLoading: jobLoading, error: jobError } = useQuery<DbJob>({
+  // Fetch job details - backend returns job with assignedPeople array
+  const { data: dbJob, isLoading: jobLoading, error: jobError } = useQuery<DbJob & { assignedPeople: string[] }>({
     queryKey: ['/api/jobs', jobId],
     queryFn: async () => {
       const response = await fetch(`/api/jobs/${jobId}`);
@@ -316,12 +316,12 @@ export default function JobDetail() {
                 </div>
 
                 {/* Lead Contact */}
-                {client.leadContactName && (
+                {client.leadContact && (
                   <div>
                     <p className="font-medium mb-2">Lead Contact</p>
                     <div className="space-y-2">
                       <p className="text-sm" data-testid="text-client-contact-name">
-                        {client.leadContactName}
+                        {client.leadContact}
                       </p>
                       {client.leadContactEmail && (
                         <div className="flex items-center gap-2">

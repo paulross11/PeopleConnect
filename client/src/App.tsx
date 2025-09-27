@@ -12,6 +12,7 @@ import PersonDetail from "@/pages/PersonDetail";
 import Clients from "@/pages/Clients";
 import ClientDetail from "@/pages/ClientDetail";
 import Jobs from "@/pages/Jobs";
+import JobDetail from "@/pages/JobDetail";
 import NotFound from "@/pages/not-found";
 import { Button } from "@/components/ui/button";
 import { Moon, Sun } from "lucide-react";
@@ -43,6 +44,7 @@ function Router() {
       <Route path="/clients" component={Clients} />
       <Route path="/clients/:id" component={ClientDetail} />
       <Route path="/jobs" component={Jobs} />
+      <Route path="/jobs/:id" component={JobDetail} />
       <Route component={NotFound} />
     </Switch>
   );
