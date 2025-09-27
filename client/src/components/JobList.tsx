@@ -78,7 +78,7 @@ export default function JobList({ editingJob, onCancelEdit, onEditJob }: JobList
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [showAddForm, setShowAddForm] = useState(false);
-  const [viewMode, setViewMode] = useState<"card" | "list">("card");
+  const [viewMode, setViewMode] = useState<"card" | "list">("list");
 
   // Fetch jobs with assigned people (API returns enriched data)
   const { data: jobs = [], isLoading, error } = useQuery<(Job & { assignedPeople: string[] })[]>({
