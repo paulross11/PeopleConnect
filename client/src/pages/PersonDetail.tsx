@@ -8,7 +8,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { type Person as DbPerson, type Job } from "@shared/schema";
+import { type Person as DbPerson, type Job as DbJob } from "@shared/schema";
 
 // Convert database person to frontend format
 const dbPersonToFrontend = (dbPerson: DbPerson) => ({
@@ -17,19 +17,15 @@ const dbPersonToFrontend = (dbPerson: DbPerson) => ({
   email: dbPerson.email || undefined,
   telephone: dbPerson.telephone || undefined,
   address: dbPerson.address || undefined,
-  jobs: [] as Job[], // Will be populated separately
+  jobs: [] as JobWithDetails[], // Will be populated separately
 });
 
-interface Job {
-  id: string;
-  title: string;
-  status: string;
+interface JobWithDetails extends DbJob {
+  assignedPeople?: string[];
   client?: {
     id: string;
     name: string;
   };
-  jobDate?: Date | null;
-  fee?: number | null;
 }
 
 interface PersonWithJobs {
@@ -38,7 +34,7 @@ interface PersonWithJobs {
   email?: string;
   telephone?: string;
   address?: string;
-  jobs: Job[];
+  jobs: JobWithDetails[];
 }
 
 export default function PersonDetail() {
@@ -62,7 +58,7 @@ export default function PersonDetail() {
   });
 
   // Fetch all jobs to find ones assigned to this person
-  const { data: jobs = [], isLoading: jobsLoading } = useQuery<Job[]>({
+  const { data: jobs = [], isLoading: jobsLoading } = useQuery<JobWithDetails[]>({
     queryKey: ['/api/jobs'],
   });
 

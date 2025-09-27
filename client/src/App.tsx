@@ -8,6 +8,7 @@ import { AppSidebar } from "@/components/AppSidebar";
 import { ThemeProvider } from "next-themes";
 import Dashboard from "@/pages/Dashboard";
 import People from "@/pages/People";
+import PersonDetail from "@/pages/PersonDetail";
 import Clients from "@/pages/Clients";
 import Jobs from "@/pages/Jobs";
 import NotFound from "@/pages/not-found";
@@ -37,6 +38,7 @@ function Router() {
     <Switch>
       <Route path="/" component={Dashboard} />
       <Route path="/people" component={People} />
+      <Route path="/people/:id" component={PersonDetail} />
       <Route path="/clients" component={Clients} />
       <Route path="/jobs" component={Jobs} />
       <Route component={NotFound} />
