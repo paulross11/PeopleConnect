@@ -41,24 +41,43 @@ export const jobs = pgTable("jobs", {
   jobDate: timestamp("job_date"),
   address: text("address"),
   fee: integer("fee"), // Fee amount in cents to avoid decimal precision issues
-  assignedPeople: json("assigned_people").$type<string[]>().default([]), // Array of person IDs
   clientId: varchar("client_id").references(() => clients.id).notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Job-People junction table for proper relational design
+export const jobPeople = pgTable("job_people", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  jobId: varchar("job_id").references(() => jobs.id, { onDelete: 'cascade' }).notNull(),
+  personId: varchar("person_id").references(() => people.id, { onDelete: 'cascade' }).notNull(),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
 // Relations
 export const peopleRelations = relations(people, ({ many }) => ({
-  // Note: People are now linked to jobs via assignedPeople JSON array, not direct foreign key
+  jobAssignments: many(jobPeople),
 }));
 
 export const clientsRelations = relations(clients, ({ many }) => ({
   jobs: many(jobs),
 }));
 
-export const jobsRelations = relations(jobs, ({ one }) => ({
+export const jobsRelations = relations(jobs, ({ one, many }) => ({
   client: one(clients, {
     fields: [jobs.clientId],
     references: [clients.id],
+  }),
+  peopleAssignments: many(jobPeople),
+}));
+
+export const jobPeopleRelations = relations(jobPeople, ({ one }) => ({
+  job: one(jobs, {
+    fields: [jobPeople.jobId],
+    references: [jobs.id],
+  }),
+  person: one(people, {
+    fields: [jobPeople.personId],
+    references: [people.id],
   }),
 }));
 
@@ -86,9 +105,14 @@ export const insertJobSchema = createInsertSchema(jobs).omit({
   id: true,
   createdAt: true,
 }).extend({
-  assignedPeople: z.array(z.string()).default([]),
   clientId: z.string().min(1, "Client is required"),
   fee: z.number().min(0, "Fee must be non-negative").optional(),
+  assignedPeople: z.array(z.string()).default([]), // For frontend compatibility
+});
+
+export const insertJobPeopleSchema = createInsertSchema(jobPeople).omit({
+  id: true,
+  createdAt: true,
 });
 
 // Types
@@ -100,6 +124,9 @@ export type Client = typeof clients.$inferSelect;
 
 export type InsertJob = z.infer<typeof insertJobSchema>;
 export type Job = typeof jobs.$inferSelect;
+
+export type InsertJobPeople = z.infer<typeof insertJobPeopleSchema>;
+export type JobPeople = typeof jobPeople.$inferSelect;
 
 // Keep existing user schema for backwards compatibility
 export const users = pgTable("users", {

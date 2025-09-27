@@ -18,10 +18,14 @@ import { type Job, type Client, type Person, type InsertJob } from "@shared/sche
 
 interface JobWithDetails extends Job {
   client?: Client;
+  assignedPeople?: string[]; // From the backend helper methods
   assignedPeopleDetails?: Person[];
 }
 
-type JobFormData = InsertJob;
+// Form data type for compatibility with frontend form (jobDate as string)
+type JobFormData = Omit<InsertJob, 'jobDate'> & {
+  jobDate?: string; // Form uses string for datetime-local input
+};
 
 interface JobListProps {
   editingJob?: JobWithDetails | null;
@@ -37,8 +41,8 @@ export default function JobList({ editingJob, onCancelEdit }: JobListProps) {
   const [showAddForm, setShowAddForm] = useState(false);
   const [viewMode, setViewMode] = useState<"card" | "list">("card");
 
-  // Fetch jobs
-  const { data: jobs = [], isLoading, error } = useQuery<Job[]>({
+  // Fetch jobs with assigned people (API returns enriched data)
+  const { data: jobs = [], isLoading, error } = useQuery<(Job & { assignedPeople: string[] })[]>({
     queryKey: ['/api/jobs'],
   });
 

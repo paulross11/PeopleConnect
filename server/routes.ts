@@ -193,10 +193,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Job API routes
   
-  // GET /api/jobs - Get all jobs
+  // GET /api/jobs - Get all jobs with assigned people
   app.get("/api/jobs", async (req, res) => {
     try {
-      const jobs = await storage.getAllJobs();
+      const jobs = await storage.getAllJobsWithPeople();
       res.json(jobs);
     } catch (error) {
       console.error("Error fetching jobs:", error);

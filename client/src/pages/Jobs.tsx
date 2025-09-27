@@ -7,6 +7,7 @@ import { type Job, type Client, type Person } from "@shared/schema";
 
 interface JobWithDetails extends Job {
   client?: Client;
+  assignedPeople?: string[]; // From the backend helper methods
   assignedPeopleDetails?: Person[];
 }
 
@@ -15,8 +16,8 @@ export default function Jobs() {
   const queryClient = useQueryClient();
   const [editingJob, setEditingJob] = useState<JobWithDetails | null>(null);
 
-  // Fetch jobs, clients, and people for enriching data
-  const { data: jobs = [] } = useQuery<Job[]>({
+  // Fetch jobs with assigned people (API returns enriched data)
+  const { data: jobs = [] } = useQuery<(Job & { assignedPeople: string[] })[]>({
     queryKey: ['/api/jobs'],
   });
 
