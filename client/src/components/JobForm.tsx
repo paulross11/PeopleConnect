@@ -24,11 +24,12 @@ import {
 } from "@/components/ui/form";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { CalendarIcon, PoundSterling, MapPin, Users, Briefcase } from "lucide-react";
+import { CalendarIcon, PoundSterling, MapPin, Users, Briefcase, Clock } from "lucide-react";
 
 // Extend the insert schema for the form
 const jobFormSchema = insertJobSchema.extend({
   jobDate: z.string().optional(),
+  jobTime: z.string().optional(),
   fee: z.number().min(0, "Fee must be non-negative").optional(),
 });
 
@@ -59,13 +60,30 @@ export default function JobForm({
     queryKey: ['/api/people'],
   });
 
+  // Helper function to split datetime into date and time
+  const getDateTimeDefaults = (dateTimeString?: string) => {
+    if (!dateTimeString) return { date: "", time: "" };
+    
+    try {
+      const dateObj = new Date(dateTimeString);
+      const date = dateObj.toISOString().split('T')[0]; // YYYY-MM-DD format
+      const time = dateObj.toTimeString().slice(0, 5); // HH:MM format
+      return { date, time };
+    } catch {
+      return { date: "", time: "" };
+    }
+  };
+
+  const { date: defaultDate, time: defaultTime } = getDateTimeDefaults(initialData?.jobDate);
+
   const form = useForm<JobFormData>({
     resolver: zodResolver(jobFormSchema),
     defaultValues: {
       title: initialData?.title || "",
       description: initialData?.description || "",
       status: initialData?.status || "pending",
-      jobDate: initialData?.jobDate || "",
+      jobDate: defaultDate,
+      jobTime: defaultTime,
       address: initialData?.address || "",
       fee: initialData?.fee || 0,
       clientId: initialData?.clientId || "",
@@ -74,11 +92,25 @@ export default function JobForm({
   });
 
   const handleSubmit = (data: JobFormData) => {
-    // Convert date string to Date object if provided, and ensure proper typing
+    // Combine date and time into a single datetime
+    let combinedDateTime: Date | undefined;
+    
+    if (data.jobDate && data.jobTime) {
+      // Combine date and time
+      const dateTimeString = `${data.jobDate}T${data.jobTime}`;
+      combinedDateTime = new Date(dateTimeString);
+    } else if (data.jobDate) {
+      // Only date provided, use start of day
+      combinedDateTime = new Date(`${data.jobDate}T00:00`);
+    }
+    
+    // Create processed data without jobTime field
+    const { jobTime, ...dataWithoutTime } = data;
     const processedData: any = {
-      ...data,
-      jobDate: data.jobDate ? new Date(data.jobDate) : undefined,
+      ...dataWithoutTime,
+      jobDate: combinedDateTime,
     };
+    
     onSubmit(processedData);
   };
 
@@ -195,26 +227,49 @@ export default function JobForm({
                 )}
               />
 
-              <FormField
-                control={form.control}
-                name="jobDate"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="flex items-center gap-2">
-                      <CalendarIcon className="w-4 h-4" />
-                      Job Date
-                    </FormLabel>
-                    <FormControl>
-                      <Input 
-                        type="datetime-local"
-                        {...field} 
-                        data-testid="input-job-date"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="jobDate"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="flex items-center gap-2">
+                        <CalendarIcon className="w-4 h-4" />
+                        Job Date
+                      </FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="date"
+                          {...field} 
+                          data-testid="input-job-date"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="jobTime"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="flex items-center gap-2">
+                        <Clock className="w-4 h-4" />
+                        Job Time
+                      </FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="time"
+                          {...field} 
+                          data-testid="input-job-time"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
 
               <FormField
                 control={form.control}
