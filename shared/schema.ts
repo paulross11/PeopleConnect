@@ -108,6 +108,7 @@ export const insertJobSchema = createInsertSchema(jobs).omit({
   clientId: z.string().min(1, "Client is required"),
   fee: z.number().min(0, "Fee must be non-negative").optional(),
   assignedPeople: z.array(z.string()).default([]), // For frontend compatibility
+  jobDate: z.string().datetime().optional().transform((val) => val ? new Date(val) : undefined).or(z.date().optional()), // Accept ISO string and convert to Date
 });
 
 export const insertJobPeopleSchema = createInsertSchema(jobPeople).omit({
