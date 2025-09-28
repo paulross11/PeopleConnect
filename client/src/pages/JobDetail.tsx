@@ -67,6 +67,33 @@ function formatDate(date: Date | string | null | undefined): string {
   }).format(dateObj);
 }
 
+function formatDateOnly(date: Date | string | null | undefined): string {
+  if (!date) return "Not specified";
+  
+  const dateObj = typeof date === 'string' ? new Date(date) : date;
+  
+  if (isNaN(dateObj.getTime())) return "Invalid date";
+  
+  return new Intl.DateTimeFormat('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric'
+  }).format(dateObj);
+}
+
+function formatTimeOnly(date: Date | string | null | undefined): string {
+  if (!date) return "Not specified";
+  
+  const dateObj = typeof date === 'string' ? new Date(date) : date;
+  
+  if (isNaN(dateObj.getTime())) return "Invalid time";
+  
+  return new Intl.DateTimeFormat('en-US', {
+    hour: '2-digit',
+    minute: '2-digit'
+  }).format(dateObj);
+}
+
 export default function JobDetail() {
   const params = useParams();
   const [, setLocation] = useLocation();
@@ -282,9 +309,20 @@ export default function JobDetail() {
             <div className="flex items-center gap-3">
               <Calendar className="w-5 h-5 text-muted-foreground" />
               <div>
-                <p className="font-medium">Date & Time</p>
+                <p className="font-medium">Date</p>
                 <p className="text-sm text-muted-foreground" data-testid="text-job-date">
-                  {formatDate(dbJob.jobDate)}
+                  {formatDateOnly(dbJob.jobDate)}
+                </p>
+              </div>
+            </div>
+
+            {/* Job Time */}
+            <div className="flex items-center gap-3">
+              <Clock className="w-5 h-5 text-muted-foreground" />
+              <div>
+                <p className="font-medium">Time</p>
+                <p className="text-sm text-muted-foreground" data-testid="text-job-time">
+                  {formatTimeOnly(dbJob.jobDate)}
                 </p>
               </div>
             </div>
